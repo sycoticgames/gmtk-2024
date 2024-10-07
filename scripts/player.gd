@@ -4,8 +4,6 @@ extends CharacterBody3D
 @onready var camera = $Anchor/Camera
 @onready var mesh = $Mesh
 
-@onready var girl = $"Mesh/character-female-b2"
-@onready var boy = $"Mesh/character-male-d2"
 @onready var animation_tree = $Mesh/AnimationTree
 @onready var animation_state = $Mesh/AnimationTree.get("parameters/playback")
 
@@ -29,8 +27,6 @@ var _scroll_speed := 0.0
 
 func _ready():
 	anchor.basis = basis
-	boy.visible = false
-	girl.visible = true
 	pass
 
 func _process(delta):
