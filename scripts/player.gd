@@ -9,16 +9,9 @@ extends CharacterBody3D
 @onready var animation_tree = $Mesh/AnimationTree
 @onready var animation_state = $Mesh/AnimationTree.get("parameters/playback")
 
-@onready var climb_check = $Mesh/ClimbCheck
-@onready var climb_finished_check = $Mesh/ClimbFinishCheck
-
-@onready var stick_point_holder = $Mesh/StickPointHolder
-@onready var stick_point = $Mesh/StickPointHolder/StickPoint
-
 @onready var block_check = $Anchor/Camera/BlockCheck
 
 @onready var crosshair = $Anchor/Camera/BlockCheck/Crosshair
-
 
 #ORBIT
 const ORBIT_SPEED := 0.5
@@ -33,11 +26,6 @@ const SCROLL_SPEED := 25.0
 const ZOOM_MIN := 1.0
 const ZOOM_MAX := 15.0
 var _scroll_speed := 0.0
-#CLIMBING
-var can_climb := true
-var is_climbing := false
-var stamina := 5.0
-var last_floor := true
 
 func _ready():
 	anchor.basis = basis
@@ -47,21 +35,7 @@ func _ready():
 
 func _process(delta):
 	if direction != Vector3.ZERO:
-		if !is_climbing:
-			mesh.rotation.y = lerp_angle(mesh.rotation.y, atan2(direction.x, direction.z), SPEED * delta)
-		else:
-			stamina = clampf(stamina - 0.05, 0, 10.0)
-			mesh.rotation.y = -atan2(climb_check.get_collision_normal().z, climb_check.get_collision_normal().x) - Global.Deg90
-	if !is_climbing:
-		stamina = clampf(stamina + 0.1, 0, 10.0)
-	if stamina <= 0.0:
-		is_climbing = false
-		can_climb = false
-		climb_check.enabled = false
-		await get_tree().create_timer(5).timeout
-		stamina = 10.0
-		can_climb = true
-		climb_check.enabled = true
+		mesh.rotation.y = lerp_angle(mesh.rotation.y, atan2(direction.x, direction.z), SPEED * delta)
 	
 	var block = block_check.get_collider()
 	if is_instance_valid(block):
@@ -79,47 +53,27 @@ func _physics_process(delta):
 		return
 	
 	var input_dir = Input.get_vector("move_left", "move_right", "move_backward", "move_forward")
-	if can_climb:
-		climbing()
-	if is_climbing:
-		stick_point_holder.global_transform.origin = climb_check.get_collision_point()
-		global_transform.origin.x = stick_point.global_transform.origin.x
-		global_transform.origin.z = stick_point.global_transform.origin.z
+	if not is_on_floor():
+		velocity += get_gravity() * 2 * delta
 		
-		var wall_normal_rotation = -(atan2(climb_check.get_collision_normal().z, climb_check.get_collision_normal().x) - Global.Deg90)
-		if Global.current_gamemode == Global.GameMode.SCALE:
-			direction = Vector3(input_dir.x, input_dir.y, 0).rotated(Vector3.UP, wall_normal_rotation).normalized()
-		if direction:
-			velocity.x = direction.x * SPEED
-			velocity.y = direction.y * SPEED
-			velocity.z = direction.z * SPEED
-		else:
-			velocity.x = move_toward(velocity.x, 0, SPEED)
-			velocity.y = move_toward(velocity.y, 0, SPEED)
-			velocity.z = move_toward(velocity.z, 0, SPEED)
-	else:
-		if not is_on_floor():
-			velocity += get_gravity() * 2 * delta
-			
-		if Input.is_action_just_pressed("jump") and is_on_floor():
-			velocity.y = JUMP_VELOCITY * 1.5
-			animation_tree.set("parameters/conditions/is_jumping", true)
-			animation_tree.set("parameters/conditions/is_grounded", false)
-		if is_on_floor() and !last_floor:
-			animation_tree.set("parameters/conditions/is_jumping", false)
-			animation_tree.set("parameters/conditions/is_grounded", true)
-		last_floor = is_on_floor()
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = JUMP_VELOCITY * 1.5
+		animation_tree.set("parameters/conditions/is_jumping", true)
+		animation_tree.set("parameters/conditions/is_grounded", false)
+	if is_on_floor():
+		animation_tree.set("parameters/conditions/is_jumping", false)
+		animation_tree.set("parameters/conditions/is_grounded", true)
 
-		direction = (transform.basis * Vector3(-input_dir.x, 0, input_dir.y)).normalized()
-		direction = direction.rotated(Vector3.UP, anchor.rotation.y).normalized()
-		
-		if direction:
-			velocity.x = direction.x * SPEED
-			velocity.z = direction.z * SPEED
-		else:
-			velocity.x = move_toward(velocity.x, 0, SPEED)
-			velocity.z = move_toward(velocity.z, 0, SPEED)
-		animation_tree.set("parameters/IdleWalkRun/blend_position", velocity.length()/SPEED)
+	direction = (transform.basis * Vector3(-input_dir.x, 0, input_dir.y)).normalized()
+	direction = direction.rotated(Vector3.UP, anchor.rotation.y).normalized()
+	
+	if direction:
+		velocity.x = direction.x * SPEED
+		velocity.z = direction.z * SPEED
+	else:
+		velocity.x = move_toward(velocity.x, 0, SPEED)
+		velocity.z = move_toward(velocity.z, 0, SPEED)
+	animation_tree.set("parameters/IdleWalkRun/blend_position", velocity.length()/SPEED)
 	if Global.current_gamemode == Global.GameMode.SCALE:
 		move_and_slide()
 	
@@ -139,15 +93,6 @@ func _physics_process(delta):
 	_scroll_speed = 0.0
 
 func _input(event):
-	#if Input.is_action_just_pressed("toggle_gender"):
-		#if girl.visible:
-			#girl.visible = false
-			#boy.visible = true
-			#animation_tree.anim_player = ^"Mesh/character-male-d2/AnimationPlayer"
-		#else:
-			#boy.visible = false
-			#girl.visible = true
-			#animation_tree.anim_player = ^"Mesh/character-female-b2/AnimationPlayer"
 	if Global.current_gamemode != Global.GameMode.SCALE:
 		return
 	if event is InputEventMouseMotion:
@@ -162,21 +107,6 @@ func _input(event):
 	if event.is_action_released("select"):
 		animation_tree.set("parameters/conditions/dropped_block", true)
 		animation_tree.set("parameters/conditions/is_holding_block", false)
-
-func climbing():
-	if climb_check.is_colliding():
-		if climb_finished_check.is_colliding():
-			await get_tree().create_timer(0.3).timeout
-			animation_tree.set("parameters/conditions/is_climbing", true)
-			is_climbing = true
-		else:
-			velocity.y = JUMP_VELOCITY * 2
-			animation_tree.set("parameters/conditions/is_jumping", true)
-			await get_tree().create_timer(5).timeout
-			is_climbing = false
-	else:
-		animation_tree.set("parameters/conditions/is_climbing", false)
-		is_climbing = false
 
 func _check_for_block():
 	var block = block_check.get_collider()

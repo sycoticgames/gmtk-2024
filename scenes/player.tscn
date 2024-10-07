@@ -102,7 +102,7 @@ states/jump/position = Vector2(282, 209)
 states/pick-up/node = SubResource("AnimationNodeAnimation_1jt2i")
 states/pick-up/position = Vector2(288, -20)
 transitions = ["Start", "IdleWalkRun", SubResource("AnimationNodeStateMachineTransition_h63t7"), "IdleWalkRun", "jump", SubResource("AnimationNodeStateMachineTransition_5yyi7"), "jump", "crouch", SubResource("AnimationNodeStateMachineTransition_yjutl"), "crouch", "IdleWalkRun", SubResource("AnimationNodeStateMachineTransition_21txr"), "IdleWalkRun", "pick-up", SubResource("AnimationNodeStateMachineTransition_xkenu"), "pick-up", "holding-both", SubResource("AnimationNodeStateMachineTransition_0acwv"), "holding-both", "IdleWalkRun", SubResource("AnimationNodeStateMachineTransition_4cqt1"), "IdleWalkRun", "fall", SubResource("AnimationNodeStateMachineTransition_ho8sc"), "fall", "jump", SubResource("AnimationNodeStateMachineTransition_s0pd0")]
-graph_offset = Vector2(-126, -73)
+graph_offset = Vector2(-121, -32)
 
 [sub_resource type="Animation" id="Animation_t2vpi"]
 resource_name = "attack-kick-left"
@@ -5415,10 +5415,10 @@ transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0)
 bones/1/position = Vector3(0.083571, 0.17625, -0.02875)
 bones/2/position = Vector3(-0.083571, 0.17625, -0.02875)
 bones/3/position = Vector3(-1.44382e-15, 0.17625, -0.02875)
-bones/3/rotation = Quaternion(-0.00539091, 0, 0, 0.999986)
-bones/4/rotation = Quaternion(0, 0, -0.367692, 0.929948)
-bones/5/rotation = Quaternion(0, 0, 0.367692, 0.929948)
-bones/6/rotation = Quaternion(0, 0.00539091, 0, 0.999986)
+bones/3/rotation = Quaternion(-0.00061926, 0, 0, 1)
+bones/4/rotation = Quaternion(0, 0, -0.379295, 0.925276)
+bones/5/rotation = Quaternion(0, 0, 0.379295, 0.925276)
+bones/6/rotation = Quaternion(0, 0.00061926, 0, 1)
 
 [node name="AnimationPlayer" parent="Mesh/character-female-b2" index="1"]
 libraries = {
@@ -5444,29 +5444,15 @@ visible = false
 bones/1/position = Vector3(0.083571, 0.17625, -0.02875)
 bones/2/position = Vector3(-0.082296, 0.17625, -0.02875)
 bones/3/position = Vector3(-1.44382e-15, 0.17625, -0.02875)
-bones/3/rotation = Quaternion(-0.00539091, 0, 0, 0.999986)
-bones/4/rotation = Quaternion(0, 0, -0.367692, 0.929948)
-bones/5/rotation = Quaternion(0, 0, 0.367692, 0.929948)
-bones/6/rotation = Quaternion(0, 0.00539091, 0, 0.999986)
+bones/3/rotation = Quaternion(0.0259575, 0, 0, 0.999663)
+bones/4/rotation = Quaternion(0, 0, -0.325707, 0.945471)
+bones/5/rotation = Quaternion(0, 0, 0.325707, 0.945471)
+bones/6/rotation = Quaternion(0, -0.0259575, 0, 0.999663)
 
 [node name="AnimationPlayer" parent="Mesh/character-male-d2" index="1"]
 libraries = {
 "": SubResource("AnimationLibrary_80nf2")
 }
-
-[node name="ClimbCheck" type="RayCast3D" parent="Mesh"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0.5, 0)
-collision_mask = 4
-
-[node name="ClimbFinishCheck" type="RayCast3D" parent="Mesh"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 1, 0)
-collision_mask = 4
-
-[node name="StickPointHolder" type="Node3D" parent="Mesh"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.5)
-
-[node name="StickPoint" type="Node3D" parent="Mesh/StickPointHolder"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.5)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.75, 0)
